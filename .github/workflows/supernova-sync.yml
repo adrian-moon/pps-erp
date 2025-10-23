@@ -5,27 +5,36 @@ on:
     branches:
       - main
     paths:
-      - 'tokens.json' 
-      
+      - 'tokens.json'
+
 jobs:
   sync_tokens:
     runs-on: ubuntu-latest
     steps:
-      # 1. Checks out the repository
-      - uses: actions/checkout@v4 
-      
-      # 2. Install System Dependencies (Needed to resolve libsecret error)
+      # 1. Check out the repository
+      - uses: actions/checkout@v4
+
+      # 2. Install system dependencies (required for keychain handling)
       - name: Install System Dependencies
         run: sudo apt-get update && sudo apt-get install -y libsecret-1-0
 
-      # 3. Installs the Supernova CLI tool
+      # 3. Install the Supernova CLI
       - name: Install Supernova CLI
         run: npm install -g @supernovaio/cli
-        
-      # 4. Runs the sync command with fixed syntax
+
+      # 4. Create Supernova config file
+      - name: Create Supernova config
+        run: |
+          cat <<EOF > supernova.config.json
+          {
+            "version": "1.0",
+            "designSystemId": "609622-shared-draft",
+            "tokenFilePath": "./tokens.json"
+          }
+          EOF
+
+      # 5. Sync tokens with Supernova
       - name: Synchronize tokens with Supernova
-        run: | # <-- CRITICAL CHANGE: Use the pipe operator
-          supernova sync-tokens \
-            --apiKey=${{ secrets.SUPERNOVA_ACCESS_TOKEN }} \
-            --designSystemId="https://app.supernova.io/536934-pps/578018-pps-design-system/609622-shared-draft" \
-            --tokenFilePath="./tokens.json"
+        run: supernova sync-tokens \
+          --apiKey="${{ secrets.SUPERNOVA_ACCESS_TOKEN }}" \
+          --configFilePath="./supernova.config.json"
