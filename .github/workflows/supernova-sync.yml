@@ -14,7 +14,7 @@ jobs:
       # 1. Checks out the repository
       - uses: actions/checkout@v4 
       
-      # 2. Add this NEW step to install the missing library
+      # 2. Install System Dependencies (Needed to resolve libsecret error)
       - name: Install System Dependencies
         run: sudo apt-get update && sudo apt-get install -y libsecret-1-0
 
@@ -22,9 +22,10 @@ jobs:
       - name: Install Supernova CLI
         run: npm install -g @supernovaio/cli
         
-      # 4. Runs the sync command (the command itself is correct)
+      # 4. Runs the sync command with fixed syntax
       - name: Synchronize tokens with Supernova
-        run: supernova sync-tokens \
-          --apiKey=${{ secrets.SUPERNOVA_ACCESS_TOKEN }} \
-          --designSystemId="https://app.supernova.io/536934-pps/578018-pps-design-system/609622-shared-draft" \
-          --tokenFilePath="./tokens.json"
+        run: | # <-- CRITICAL CHANGE: Use the pipe operator
+          supernova sync-tokens \
+            --apiKey=${{ secrets.SUPERNOVA_ACCESS_TOKEN }} \
+            --designSystemId="https://app.supernova.io/536934-pps/578018-pps-design-system/609622-shared-draft" \
+            --tokenFilePath="./tokens.json"
