@@ -1,0 +1,26 @@
+name: Supernova Token Sync
+
+on:
+  push:
+    branches:
+      - main  # Set this to the branch where designers push token changes (e.g., 'main' or 'design-tokens')
+    paths:
+      - 'tokens.json' # Triggers only when the specific file is changed
+      
+jobs:
+  sync_tokens:
+    runs-on: ubuntu-latest
+    steps:
+      # 1. Checks out the repository so the workflow can access your token files
+      - uses: actions/checkout@v4 
+      
+      # 2. Installs the Supernova CLI tool
+      - name: Install Supernova CLI
+        run: npm install -g @supernovaio/cli
+        
+      # 3. Runs the sync command to read and upload the tokens
+      - name: Synchronize tokens with Supernova
+        run: supernova sync-tokens \
+          --apiKey=${{ secrets.SUPERNOVA_ACCESS_TOKEN }} \
+          --designSystemId="https://app.supernova.io/536934-pps/578018-pps-design-system/609622-shared-draft" \
+          --tokenFilePath="./tokens.json" # <--- FIXED: Now correctly uses --tokenFilePath
